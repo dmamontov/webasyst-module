@@ -1,18 +1,22 @@
 <?php
-
-$config = include(dirname(__FILE__) . "/../../../../../../wa-config/apps/shop/workflow.php");
-$handlers = array();
-foreach ($config["actions"] as $ak => $vk) {
-    $handlers["order_action." . $ak] = 'orderAdd';
-}
-$handlers["frontend_head"] = "analyticsAdd";
 return array(
-    'name'          => 'Retailcrm',
+    'name'          => 'retailCRM',
     'description'   => 'Автоматизация интернет-продаж',
-    'vendor'        => '1009747',
+    'vendor'        => '1010049',
     'version'       => '3.0.1',
     'img'           => 'img/icon.png',
     'shop_settings' => true,
     'frontend'      => true,
-    'handlers'      => $handlers
+    'handlers'      => array(
+        'order_action.create'   => 'orderAdd',
+        'order_action.process'  => 'orderAdd',
+        'order_action.pay'      => 'orderAdd',
+        'order_action.ship'     => 'orderAdd',
+        'order_action.refund'   => 'orderAdd',
+        'order_action.edit'     => 'orderAdd',
+        'order_action.complete' => 'orderAdd',
+        'order_action.comment'  => 'orderAdd',
+        'order_action.callback' => 'orderAdd',
+        'frontend_head'         => 'analyticsAdd',
+    ),
 );
