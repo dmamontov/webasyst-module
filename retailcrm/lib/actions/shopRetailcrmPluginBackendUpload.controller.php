@@ -1,5 +1,5 @@
 <?php
-
+require_once "/../vendor/autoload.php";
 class shopRetailcrmPluginBackendUploadController extends waJsonController
 {
     public $client;
@@ -7,7 +7,7 @@ class shopRetailcrmPluginBackendUploadController extends waJsonController
     {
         $app_settings_model = new waAppSettingsModel();
         $settings = json_decode($app_settings_model->get(array('shop', 'retailcrm'), 'options'), true);
-        $this->client = new ApiClient($settings["url"], $settings["key"]);
+        $this->client = new \RetailCrm\ApiClient($settings["url"], $settings["key"]);
 
         $type = $this->getRequest()->get("upload");
         switch ($type) {

@@ -1,5 +1,5 @@
 <?php
-
+require_once "/../vendor/autoload.php";
 class shopRetailcrmPluginBackendSaveController extends waJsonController
 {
     public $client;
@@ -29,7 +29,7 @@ class shopRetailcrmPluginBackendSaveController extends waJsonController
 
     public function checkConnect($url, $key)
     {
-        $this->client = new ApiClient($url, $key);
+        $this->client = new \RetailCrm\ApiClient($url, $key);
         $client = $this->client;
         try {
             $response = $client->statusesList();

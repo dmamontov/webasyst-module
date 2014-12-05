@@ -1,5 +1,10 @@
 <?php
 
+namespace RetailCrm;
+
+use RetailCrm\Http\Client;
+use RetailCrm\Response\ApiResponse;
+
 /**
  *  retailCRM API client class
  */
@@ -10,13 +15,19 @@ class ApiClient
     protected $client;
 
     /**
+     * Site code
+     */
+    protected $siteCode;
+
+    /**
      * Client creating
      *
      * @param  string $url
      * @param  string $apiKey
+     * @param  string $siteCode
      * @return mixed
      */
-    public function __construct($url, $apiKey)
+    public function __construct($url, $apiKey, $site = null)
     {
         if ('/' != substr($url, strlen($url) - 1, 1)) {
             $url .= '/';
@@ -25,64 +36,72 @@ class ApiClient
         $url = $url . 'api/' . self::VERSION;
 
         $this->client = new Client($url, array('apiKey' => $apiKey));
+        $this->siteCode = $site;
     }
 
     /**
      * Create a order
      *
      * @param  array       $order
+     * @param  string      $site (default: null)
      * @return ApiResponse
      */
-    public function ordersCreate(array $order)
+    public function ordersCreate(array $order, $site = null)
     {
         if (!sizeof($order)) {
-            throw new InvalidArgumentException('Parameter `order` must contains a data');
+            throw new \InvalidArgumentException('Parameter `order` must contains a data');
         }
 
-        return $this->client->makeRequest("/orders/create", Client::METHOD_POST, array(
+        return $this->client->makeRequest("/orders/create", Client::METHOD_POST, $this->fillSite($site, array(
             'order' => json_encode($order)
-        ));
+        )));
     }
 
     /**
      * Edit a order
      *
      * @param  array       $order
+     * @param  string      $site (default: null)
      * @return ApiResponse
      */
-    public function ordersEdit(array $order, $by = 'externalId')
+    public function ordersEdit(array $order, $by = 'externalId', $site = null)
     {
         if (!sizeof($order)) {
-            throw new InvalidArgumentException('Parameter `order` must contains a data');
+            throw new \InvalidArgumentException('Parameter `order` must contains a data');
         }
 
         $this->checkIdParameter($by);
 
         if (!isset($order[$by])) {
-            throw new InvalidArgumentException(sprintf('Order array must contain the "%s" parameter.', $by));
+            throw new \InvalidArgumentException(sprintf('Order array must contain the "%s" parameter.', $by));
         }
 
-        return $this->client->makeRequest("/orders/" . $order[$by] . "/edit", Client::METHOD_POST, array(
-            'order' => json_encode($order),
-            'by' => $by,
-        ));
+        return $this->client->makeRequest(
+            "/orders/" . $order[$by] . "/edit",
+            Client::METHOD_POST,
+            $this->fillSite($site, array(
+                'order' => json_encode($order),
+                'by' => $by,
+            ))
+        );
     }
 
     /**
      * Upload array of the orders
      *
      * @param  array       $orders
+     * @param  string      $site (default: null)
      * @return ApiResponse
      */
-    public function ordersUpload(array $orders)
+    public function ordersUpload(array $orders, $site = null)
     {
         if (!sizeof($orders)) {
-            throw new InvalidArgumentException('Parameter `orders` must contains array of the orders');
+            throw new \InvalidArgumentException('Parameter `orders` must contains array of the orders');
         }
 
-        return $this->client->makeRequest("/orders/upload", Client::METHOD_POST, array(
+        return $this->client->makeRequest("/orders/upload", Client::METHOD_POST, $this->fillSite($site, array(
             'orders' => json_encode($orders),
-        ));
+        )));
     }
 
     /**
@@ -90,13 +109,16 @@ class ApiClient
      *
      * @param  string      $id
      * @param  string      $by (default: 'externalId')
+     * @param  string      $site (default: null)
      * @return ApiResponse
      */
-    public function ordersGet($id, $by = 'externalId')
+    public function ordersGet($id, $by = 'externalId', $site = null)
     {
         $this->checkIdParameter($by);
 
-        return $this->client->makeRequest("/orders/$id", Client::METHOD_GET, array('by' => $by));
+        return $this->client->makeRequest("/orders/$id", Client::METHOD_GET, $this->fillSite($site, array(
+            'by' => $by
+        )));
     }
 
     /**
@@ -192,7 +214,7 @@ class ApiClient
     public function ordersFixExternalIds(array $ids)
     {
         if (!sizeof($ids)) {
-            throw new InvalidArgumentException('Method parameter must contains at least one IDs pair');
+            throw new \InvalidArgumentException('Method parameter must contains at least one IDs pair');
         }
 
         return $this->client->makeRequest("/orders/fix-external-ids", Client::METHOD_POST, array(
@@ -204,40 +226,47 @@ class ApiClient
      * Create a customer
      *
      * @param  array       $customer
+     * @param  string      $site (default: null)
      * @return ApiResponse
      */
-    public function customersCreate(array $customer)
+    public function customersCreate(array $customer, $site = null)
     {
         if (!sizeof($customer)) {
-            throw new InvalidArgumentException('Parameter `customer` must contains a data');
+            throw new \InvalidArgumentException('Parameter `customer` must contains a data');
         }
 
-        return $this->client->makeRequest("/customers/create", Client::METHOD_POST, array(
+        return $this->client->makeRequest("/customers/create", Client::METHOD_POST, $this->fillSite($site, array(
             'customer' => json_encode($customer)
-        ));
+        )));
     }
 
     /**
      * Edit a customer
      *
      * @param  array       $customer
+     * @param  string      $by (default: 'externalId')
+     * @param  string      $site (default: null)
      * @return ApiResponse
      */
-    public function customersEdit(array $customer, $by = 'externalId')
+    public function customersEdit(array $customer, $by = 'externalId', $site = null)
     {
         if (!sizeof($customer)) {
-            throw new InvalidArgumentException('Parameter `customer` must contains a data');
+            throw new \InvalidArgumentException('Parameter `customer` must contains a data');
         }
 
         $this->checkIdParameter($by);
 
         if (!isset($customer[$by])) {
-            throw new InvalidArgumentException(sprintf('Customer array must contain the "%s" parameter.', $by));
+            throw new \InvalidArgumentException(sprintf('Customer array must contain the "%s" parameter.', $by));
         }
 
-        return $this->client->makeRequest("/customers/" . $customer[$by] . "/edit", Client::METHOD_POST, array(
-            'customer' => json_encode($customer),
-            'by' => $by,
+        return $this->client->makeRequest(
+            "/customers/" . $customer[$by] . "/edit",
+            Client::METHOD_POST,
+            $this->fillSite($site, array(
+                'customer' => json_encode($customer),
+                'by' => $by,
+            )
         ));
     }
 
@@ -245,17 +274,18 @@ class ApiClient
      * Upload array of the customers
      *
      * @param  array       $customers
+     * @param  string      $site (default: null)
      * @return ApiResponse
      */
-    public function customersUpload(array $customers)
+    public function customersUpload(array $customers, $site = null)
     {
         if (!sizeof($customers)) {
-            throw new InvalidArgumentException('Parameter `customers` must contains array of the customers');
+            throw new \InvalidArgumentException('Parameter `customers` must contains array of the customers');
         }
 
-        return $this->client->makeRequest("/customers/upload", Client::METHOD_POST, array(
+        return $this->client->makeRequest("/customers/upload", Client::METHOD_POST, $this->fillSite($site, array(
             'customers' => json_encode($customers),
-        ));
+        )));
     }
 
     /**
@@ -263,13 +293,16 @@ class ApiClient
      *
      * @param  string      $id
      * @param  string      $by (default: 'externalId')
+     * @param  string      $site (default: null)
      * @return ApiResponse
      */
-    public function customersGet($id, $by = 'externalId')
+    public function customersGet($id, $by = 'externalId', $site = null)
     {
         $this->checkIdParameter($by);
 
-        return $this->client->makeRequest("/customers/$id", Client::METHOD_GET, array('by' => $by));
+        return $this->client->makeRequest("/customers/$id", Client::METHOD_GET, $this->fillSite($site, array(
+            'by' => $by
+        )));
     }
 
     /**
@@ -306,7 +339,7 @@ class ApiClient
     public function customersFixExternalIds(array $ids)
     {
         if (!sizeof($ids)) {
-            throw new InvalidArgumentException('Method parameter must contains at least one IDs pair');
+            throw new \InvalidArgumentException('Method parameter must contains at least one IDs pair');
         }
 
         return $this->client->makeRequest("/customers/fix-external-ids", Client::METHOD_POST, array(
@@ -405,6 +438,16 @@ class ApiClient
     }
 
     /**
+     * Returns sites list
+     *
+     * @return ApiResponse
+     */
+    public function sitesList()
+    {
+        return $this->client->makeRequest('/reference/sites', Client::METHOD_GET);
+    }
+
+    /**
      * Edit deliveryService
      *
      * @param array $data delivery service data
@@ -413,7 +456,7 @@ class ApiClient
     public function deliveryServicesEdit(array $data)
     {
         if (!isset($data['code'])) {
-            throw new InvalidArgumentException('Data must contain "code" parameter.');
+            throw new \InvalidArgumentException('Data must contain "code" parameter.');
         }
 
         return $this->client->makeRequest(
@@ -434,7 +477,7 @@ class ApiClient
     public function deliveryTypesEdit(array $data)
     {
         if (!isset($data['code'])) {
-            throw new InvalidArgumentException('Data must contain "code" parameter.');
+            throw new \InvalidArgumentException('Data must contain "code" parameter.');
         }
 
         return $this->client->makeRequest(
@@ -455,7 +498,7 @@ class ApiClient
     public function orderMethodsEdit(array $data)
     {
         if (!isset($data['code'])) {
-            throw new InvalidArgumentException('Data must contain "code" parameter.');
+            throw new \InvalidArgumentException('Data must contain "code" parameter.');
         }
 
         return $this->client->makeRequest(
@@ -476,7 +519,7 @@ class ApiClient
     public function orderTypesEdit(array $data)
     {
         if (!isset($data['code'])) {
-            throw new InvalidArgumentException('Data must contain "code" parameter.');
+            throw new \InvalidArgumentException('Data must contain "code" parameter.');
         }
 
         return $this->client->makeRequest(
@@ -497,7 +540,7 @@ class ApiClient
     public function paymentStatusesEdit(array $data)
     {
         if (!isset($data['code'])) {
-            throw new InvalidArgumentException('Data must contain "code" parameter.');
+            throw new \InvalidArgumentException('Data must contain "code" parameter.');
         }
 
         return $this->client->makeRequest(
@@ -518,7 +561,7 @@ class ApiClient
     public function paymentTypesEdit(array $data)
     {
         if (!isset($data['code'])) {
-            throw new InvalidArgumentException('Data must contain "code" parameter.');
+            throw new \InvalidArgumentException('Data must contain "code" parameter.');
         }
 
         return $this->client->makeRequest(
@@ -539,7 +582,7 @@ class ApiClient
     public function productStatusesEdit(array $data)
     {
         if (!isset($data['code'])) {
-            throw new InvalidArgumentException('Data must contain "code" parameter.');
+            throw new \InvalidArgumentException('Data must contain "code" parameter.');
         }
 
         return $this->client->makeRequest(
@@ -560,7 +603,7 @@ class ApiClient
     public function statusesEdit(array $data)
     {
         if (!isset($data['code'])) {
-            throw new InvalidArgumentException('Data must contain "code" parameter.');
+            throw new \InvalidArgumentException('Data must contain "code" parameter.');
         }
 
         return $this->client->makeRequest(
@@ -568,6 +611,27 @@ class ApiClient
             Client::METHOD_POST,
             array(
                 'status' => json_encode($data)
+            )
+        );
+    }
+
+    /**
+     * Edit site
+     *
+     * @param array $data site data
+     * @return ApiResponse
+     */
+    public function sitesEdit(array $data)
+    {
+        if (!isset($data['code'])) {
+            throw new \InvalidArgumentException('Data must contain "code" parameter.');
+        }
+
+        return $this->client->makeRequest(
+            '/reference/sites/' . $data['code'] . '/edit',
+            Client::METHOD_POST,
+            array(
+                'site' => json_encode($data)
             )
         );
     }
@@ -583,6 +647,27 @@ class ApiClient
     }
 
     /**
+     * Return current site
+     *
+     * @return string
+     */
+    public function getSite()
+    {
+        return $this->siteCode;
+    }
+
+    /**
+     * Set site
+     *
+     * @param  string $site
+     * @return void
+     */
+    public function setSite($site)
+    {
+        $this->siteCode = $site;
+    }
+
+    /**
      * Check ID parameter
      *
      * @param  string $by
@@ -592,7 +677,7 @@ class ApiClient
     {
         $allowedForBy = array('externalId', 'id');
         if (!in_array($by, $allowedForBy)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new \InvalidArgumentException(sprintf(
                 'Value "%s" for parameter "by" is not valid. Allowed values are %s.',
                 $by,
                 implode(', ', $allowedForBy)
@@ -600,5 +685,23 @@ class ApiClient
         }
 
         return true;
+    }
+
+    /**
+     * Fill params by site value
+     *
+     * @param  string $site
+     * @param  array $params
+     * @return array
+     */
+    protected function fillSite($site, array $params)
+    {
+        if ($site) {
+            $params['site'] = $site;
+        } elseif ($this->siteCode) {
+            $params['site'] = $this->siteCode;
+        }
+
+        return $params;
     }
 }

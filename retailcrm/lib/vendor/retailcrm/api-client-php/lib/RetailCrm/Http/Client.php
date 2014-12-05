@@ -1,4 +1,10 @@
 <?php
+
+namespace RetailCrm\Http;
+
+use RetailCrm\Exception\CurlException;
+use RetailCrm\Response\ApiResponse;
+
 /**
  * HTTP client
  */
@@ -13,7 +19,7 @@ class Client
     public function __construct($url, array $defaultParameters = array())
     {
         if (false === stripos($url, 'https://')) {
-            throw new InvalidArgumentException('API schema requires HTTPS protocol');
+            throw new \InvalidArgumentException('API schema requires HTTPS protocol');
         }
 
         $this->url = $url;
@@ -33,7 +39,7 @@ class Client
     {
         $allowedMethods = array(self::METHOD_GET, self::METHOD_POST);
         if (!in_array($method, $allowedMethods)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new \InvalidArgumentException(sprintf(
                 'Method "%s" is not valid. Allowed methods are %s',
                 $method,
                 implode(', ', $allowedMethods)
@@ -52,7 +58,7 @@ class Client
         curl_setopt($ch, CURLOPT_FAILONERROR, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // return into a variable
         curl_setopt($ch, CURLOPT_TIMEOUT, (int) $timeout); // times out after 30s
-         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         // curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); // allow redirects
 
         if (self::METHOD_POST === $method) {

@@ -1,9 +1,10 @@
 <?php
+require_once "vendor/autoload.php";
 class shopRetailcrmPlugin extends shopPlugin
 {
     private $client;
 
-    public function explodeFIO($fio)
+    public function explodeName($fio)
     {
         $fio = (!$fio) ? false : explode(" ", $fio, 3);
         switch (count($fio)) {
@@ -34,9 +35,6 @@ class shopRetailcrmPlugin extends shopPlugin
 
     public function logger($message, $type, $errors = null)
     {
-        if (!file_exists(dirname(__FILE__) . "/../../../../../wa-log/retailcrm/")) {
-            mkdir(dirname(__FILE__) . "/../../../../../wa-log/retailcrm/", 0755);
-        }
         $format = "[" . date('Y-m-d H:i:s') . "]";
         if (!is_null($errors) && is_array($errors)) {
             $message .= ":\n";
@@ -48,44 +46,39 @@ class shopRetailcrmPlugin extends shopPlugin
         }
         switch ($type) {
             case 'connect':
-                $path = dirname(__FILE__) . "/../../../../../wa-log/retailcrm/connect-error.log";
-                error_log($format . " " . $message, 3, $path);
+                $path = "shop/plugins/retailcrm/connect-error.log";
+                waLog::log($format . " " . $message, $path);
                 break;
             case 'customers':
-                $path = dirname(__FILE__) . "/../../../../../wa-log/retailcrm/customers-error.log";
-                error_log($format . " " . $message, 3, $path);
+                $path = "shop/plugins/retailcrm/customers-error.log";
+                waLog::log($format . " " . $message, $path);
                 break;
             case 'orders':
-                $path = dirname(__FILE__) . "/../../../../../wa-log/retailcrm/orders-error.log";
-                error_log($format . " " . $message, 3, $path);
+                $path = "shop/plugins/retailcrm/orders-error.log";
+                waLog::log($format . " " . $message, $path);
                 break;
             case 'history':
-                $path = dirname(__FILE__) . "/../../../../../wa-log/retailcrm/history-error.log";
-                error_log($format . " " . $message, 3, $path);
+                $path = "shop/plugins/retailcrm/history-error.log";
+                waLog::log($format . " " . $message, $path);
                 break;
             case 'history-log':
-                $path = dirname(__FILE__) . "/../../../../../wa-log/retailcrm/history.log";
-                error_log($format . " " . $message, 3, $path);
+                $path = "shop/plugins/wa-log/retailcrm/history.log";
+                waLog::log($format . " " . $message, $path);
                 break;
         }
 
         $app_settings_model = new waAppSettingsModel();
         $settings = json_decode($app_settings_model->get(array('shop', 'retailcrm'), 'options'), true);
 
-        $headers = "MIME-Version: 1.0\r\n" .
-                   "Content-type:text/html;charset=UTF-8\r\n" .
-                   "X-Priority: 1 (Highest)\r\n" .
-                   "X-MSMail-Priority: High\r\n" .
-                   "Importance: High\r\n" .
-                   "From: support@retailcrm.com\r\n" .
-                   "Reply-To: support@retailcrm.com\r\n";
-
-        if (isset($settings["siteurl"]) && !empty($settings["siteurl"])) {
-            $headers .= "X-URL:" . $settings["siteurl"] . "\r\n";
-        }
-
         if ($type != 'history-log') {
-            mail($settings["email"], "Ошибка обмена retailCRM", $message, $headers);
+            $subject = "Ошибка обмена ";
+            if (isset($settings["siteurl"]) && !empty($settings["siteurl"])) {
+                $subject .= "на сайте" . $settings["siteurl"] . "\r\n";
+            } else {
+                $subject .= "retailCRM";
+            }
+            $mail = new waMailMessage($settings["email"], $subject, $message, "support@retailcrm.com");
+            $mail->send();
         }
     }
 
@@ -97,7 +90,7 @@ class shopRetailcrmPlugin extends shopPlugin
         $settings = json_decode($app_settings_model->get(array('shop', 'retailcrm'), 'options'), true);
 
         if (isset($settings["status"]) && !empty($settings["status"]) && !isset($settings["createApi"])) {
-            $this->client = new ApiClient($settings["url"], $settings["key"]);
+            $this->client = new \RetailCrm\ApiClient($settings["url"], $settings["key"]);
             $customers = $this->getCustomers($settings);
             $orders = $this->getOrders($customers, $settings);
             $edit = $this->orderPrepare($customers, $orders, $params);
@@ -193,8 +186,12 @@ class shopRetailcrmPlugin extends shopPlugin
         $contact = new waContactsCollection();
         $customers = array();
 
-        $country = new waContactCountryField();
-        $country = $country->getOptions();
+        $tmpCountry = new waCountryModel();
+        $tmpCountry = $tmpCountry->getAll();
+        $country = array();
+        foreach ($tmpCountry as $cvalue) {
+            $country[ $cvalue["iso3letter"] ] = $cvalue["name"];
+        }
 
         $region = new waRegionModel;
         $region = $region->getAll();
@@ -222,7 +219,7 @@ class shopRetailcrmPlugin extends shopPlugin
                 if (isset($settings["firstName"]) && !empty($settings["firstName"]) &&
                     isset($value[ $settings["firstName"] ]) && !empty($value[ $settings["firstName"] ])) {
                     $customer = array_merge($customer,
-                        $this->explodeFIO($value[ $settings["firstName"] ]));
+                        $this->explodeName($value[ $settings["firstName"] ]));
                 } else {
                     $customer['firstName']  = 'ФИО не указано';
                 }

@@ -1,5 +1,5 @@
 <?php
-
+require_once "/../vendor/autoload.php";
 class shopRetailcrmPluginSettingsAction extends waViewAction
 {
     public $client;
@@ -26,12 +26,12 @@ class shopRetailcrmPluginSettingsAction extends waViewAction
 
     private function checkConnect($url, $key)
     {
-        $this->client = new ApiClient($url, $key);
+        $this->client = new \RetailCrm\ApiClient($url, $key);
         $client = $this->client;
         try {
             $response = $client->statusesList();
         } catch (CurlException $e) {
-            $this->setError("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage());
+            shopRetailcrmPlugin::logger("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage(), "connect");
         }
 
         if ($response->isSuccessful()) {
@@ -180,7 +180,7 @@ class shopRetailcrmPluginSettingsAction extends waViewAction
         try {
             $response = $client->deliveryTypesList();
         } catch (CurlException $e) {
-            $this->setError("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage());
+            shopRetailcrmPlugin::logger("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage(), "connect");
         }
 
         if ($response->isSuccessful()) {
@@ -191,7 +191,7 @@ class shopRetailcrmPluginSettingsAction extends waViewAction
                     );
             }
         } else {
-            $this->setError("Ошибка получения информации: " . $e->getMessage());
+            shopRetailcrmPlugin::logger("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage(), "connect");
         }
 
         $delivery = shopShipping::getList();
@@ -205,7 +205,7 @@ class shopRetailcrmPluginSettingsAction extends waViewAction
         try {
             $response = $client->paymentTypesList();
         } catch (CurlException $e) {
-            $this->setError("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage());
+            shopRetailcrmPlugin::logger("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage(), "connect");
         }
 
         if ($response->isSuccessful()) {
@@ -216,7 +216,7 @@ class shopRetailcrmPluginSettingsAction extends waViewAction
                     );
             }
         } else {
-            $this->setError("Ошибка получения информации: " . $e->getMessage());
+            shopRetailcrmPlugin::logger("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage(), "connect");
         }
 
         $payment = waPayment::enumerate();
@@ -230,7 +230,7 @@ class shopRetailcrmPluginSettingsAction extends waViewAction
         try {
             $response = $client->statusesList();
         } catch (CurlException $e) {
-            $this->setError("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage());
+            shopRetailcrmPlugin::logger("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage(), "connect");
         }
 
         if ($response->isSuccessful()) {
@@ -241,7 +241,7 @@ class shopRetailcrmPluginSettingsAction extends waViewAction
                     );
             }
         } else {
-            $this->setError("Ошибка получения информации: " . $e->getMessage());
+            shopRetailcrmPlugin::logger("Сетевые проблемы. Ошибка подключения к retailCRM: " . $e->getMessage(), "connect");
         }
 
         $workflow = new shopWorkflow();

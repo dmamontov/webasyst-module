@@ -1,9 +1,13 @@
 <?php
 
+namespace RetailCrm\Response;
+
+use RetailCrm\Exception\InvalidJsonException;
+
 /**
  * Response from retailCRM API
  */
-class ApiResponse implements ArrayAccess
+class ApiResponse implements \ArrayAccess
 {
     // HTTP response status code
     protected $statusCode;
@@ -61,7 +65,7 @@ class ApiResponse implements ArrayAccess
         $propertyName = strtolower(substr($name, 3, 1)) . substr($name, 4);
 
         if (!isset($this->response[$propertyName])) {
-            throw new InvalidArgumentException("Method \"$name\" not found");
+            throw new \InvalidArgumentException("Method \"$name\" not found");
         }
 
         return $this->response[$propertyName];
@@ -76,7 +80,7 @@ class ApiResponse implements ArrayAccess
     public function __get($name)
     {
         if (!isset($this->response[$name])) {
-            throw new InvalidArgumentException("Property \"$name\" not found");
+            throw new \InvalidArgumentException("Property \"$name\" not found");
         }
 
         return $this->response[$name];
@@ -88,7 +92,7 @@ class ApiResponse implements ArrayAccess
      */
     public function offsetSet($offset, $value)
     {
-        throw new BadMethodCallException('This activity not allowed');
+        throw new \BadMethodCallException('This activity not allowed');
     }
 
     /**
@@ -96,7 +100,7 @@ class ApiResponse implements ArrayAccess
      */
     public function offsetUnset($offset)
     {
-        throw new BadMethodCallException('This call not allowed');
+        throw new \BadMethodCallException('This call not allowed');
     }
 
     /**
@@ -115,7 +119,7 @@ class ApiResponse implements ArrayAccess
     public function offsetGet($offset)
     {
         if (!isset($this->response[$offset])) {
-            throw new InvalidArgumentException("Property \"$offset\" not found");
+            throw new \InvalidArgumentException("Property \"$offset\" not found");
         }
 
         return $this->response[$offset];

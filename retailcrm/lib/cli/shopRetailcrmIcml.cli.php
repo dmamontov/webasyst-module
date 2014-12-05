@@ -101,11 +101,7 @@ class shopRetailcrmIcmlCli extends waCliController
         $productFields = array();
         
         $productValueModel = null;
-        if (method_exists("shopFeatureModel", "getByProduct")) {
-            $productValueModel = new shopFeatureModel();
-        } else {
-            $productValueModel = new retailcrmFeatureModel();
-        }
+        $productValueModel = new shopFeatureModel();
 
         $fields = array();
         foreach ($productParamsModel->getAll() as $key => $val) {

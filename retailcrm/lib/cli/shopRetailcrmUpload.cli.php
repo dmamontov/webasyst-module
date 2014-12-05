@@ -1,5 +1,5 @@
 <?php
-
+require_once "/../vendor/autoload.php";
 class shopRetailcrmUploadCli extends waCliController
 {
     private $settings;
@@ -11,7 +11,7 @@ class shopRetailcrmUploadCli extends waCliController
         $this->settings = json_decode($app_settings_model->get(array('shop', 'retailcrm'), 'options'), true);
 
         if (isset($this->settings["status"]) && !empty($this->settings["status"])) {
-            $this->client = new ApiClient($this->settings["url"], $this->settings["key"]);
+            $this->client = new \RetailCrm\ApiClient($this->settings["url"], $this->settings["key"]);
             $customers = shopRetailcrmPlugin::getCustomers($this->settings);
             $orders = shopRetailcrmPlugin::getOrders($customers, $this->settings);
             $this->upload($customers, $orders);

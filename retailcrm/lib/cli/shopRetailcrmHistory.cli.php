@@ -1,5 +1,5 @@
 <?php
-
+require_once "/../vendor/autoload.php";
 class shopRetailcrmHistoryCli extends waCliController
 {
     private $settings;
@@ -15,7 +15,7 @@ class shopRetailcrmHistoryCli extends waCliController
             date_default_timezone_set('Europe/Moscow');
         }
         if (isset($this->settings["status"]) && !empty($this->settings["status"])) {
-            $this->client = new ApiClient($this->settings["url"], $this->settings["key"]);
+            $this->client = new \RetailCrm\ApiClient($this->settings["url"], $this->settings["key"]);
             $orders = $this->getHistory();
 
             $config = include(dirname(__FILE__) . "/../../../../../../wa-config/apps/shop/workflow.php");
