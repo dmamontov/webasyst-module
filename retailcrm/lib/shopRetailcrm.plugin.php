@@ -219,7 +219,7 @@ class shopRetailcrmPlugin extends shopPlugin
                 if (isset($settings["firstName"]) && !empty($settings["firstName"]) &&
                     isset($value[ $settings["firstName"] ]) && !empty($value[ $settings["firstName"] ])) {
                     $customer = array_merge($customer,
-                        $this->explodeName($value[ $settings["firstName"] ]));
+                        self::explodeName($value[ $settings["firstName"] ]));
                 } else {
                     $customer['firstName']  = 'ФИО не указано';
                 }
