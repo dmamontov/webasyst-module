@@ -153,7 +153,7 @@ class shopRetailcrmIcmlCli extends waCliController
                 "ext"        => $product[ $val["product_id"] ]["ext"]
             );
 
-            if (!empty($image["image_id"]) && !empty($image["product_id"])) {
+            if (!empty($image["id"]) && !empty($image["product_id"])) {
                 $image = $this->getUrl($image);
                 $e->appendChild($this->dd->createElement('picture', $image));
             }
